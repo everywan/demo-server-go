@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package everywan.demo_server_go;
+
+option go_package = "./;record_pb";
+
+service RecordService {
+  rpc Create(CreateRequset) returns (EmptyRespose){}
+  rpc Get(IDRequest) returns (Record){}
+}
+
+enum RecordStatus {
+  Init = 0;
+  Case1 = 1;
+  Case2 = 2;
+}
+
+message Record {
+  uint64 id = 1;
+  string name = 2;
+  RecordStatus status = 3;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+  uint64 created_by = 8;
+  uint64 updated_by = 9;
+}
+
+message IDRequest {
+  uint64 id = 1;
+}
+
+message EmptyRespose {}
+
+message CreateRequset {
+  string name = 1;
+  RecordStatus status = 2;
+
+  uint64 created_by = 9;
+}
+
+// 用户不同模块的 proto.service 可以放在一起定义, 也可以分开, 视情况而定.
+// service UserComponentService{
+// };
