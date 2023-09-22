@@ -34,7 +34,7 @@ var serverCmd = &cobra.Command{
 		{
 			record := v1.Group("/record")
 			record.GET("/:id", recordCtl.Get)
-			record.Post("/", recordCtl.Create)
+			record.POST("/", recordCtl.Create)
 		}
 
 		// quit := make(chan os.Signal, 1)

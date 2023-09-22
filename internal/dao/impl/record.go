@@ -26,8 +26,9 @@ func (do *RecordDao) Create(ctx context.Context, req *dao.CreateRecordRequest) e
 	record := &dao.Record{
 		Name:      req.Name,
 		Status:    req.Status,
-		CreatedBy: req.CreatedBy,
 		CreatedAt: time.Now().Unix(),
+		CreatedBy: req.CreatedBy,
+		UpdatedBy: req.CreatedBy,
 	}
 	err := do.db.Model(record).Create(record).Error
 	if err != nil {
@@ -68,7 +69,6 @@ func (do *RecordDao) UpdateStatus(ctx context.Context, req *dao.UpdateRecordStat
 		UpdatedBy: req.UpdatedBy,
 	}
 	err := do.db.Model(record).
-		Where("id = ?", req.ID).
 		Select("status", "update_at", "updated_by").
 		Updates(record).Error
 	if err != nil {
@@ -148,7 +148,7 @@ func (do *RecordDao) Delete(ctx context.Context, id uint) error {
 	if id < 1 {
 		return errors.New("record id should gt 0")
 	}
-	err := do.db.Model(&dao.Record{}).Delete(id).Error
+	err := do.db.Delete(&dao.Record{ID: uint64(id)}).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil

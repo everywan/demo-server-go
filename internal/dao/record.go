@@ -34,11 +34,11 @@ type (
 		Name   string       `gorm:"column:name" json:"name"`
 		Status RecordStatus `grom:"column:status" json:"status"`
 
-		CreatedAt int64  `gorm:"column:created_at" json:"created_at"`
-		UpdatedAt int64  `gorm:"column:updated_at" json:"updated_at"`
-		DeletedAt *int64 `gorm:"column:deleted_at" json:"deleted_at"`
-		CreatedBy uint64 `gorm:"column:created_by" json:"created_by"`
-		UpdatedBy uint64 `gorm:"column:updated_by" json:"updated_by"`
+		CreatedAt int64          `gorm:"column:created_at" json:"created_at"`
+		UpdatedAt int64          `gorm:"column:updated_at" json:"updated_at"`
+		DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+		CreatedBy uint64         `gorm:"column:created_by" json:"created_by"`
+		UpdatedBy uint64         `gorm:"column:updated_by" json:"updated_by"`
 	}
 	CreateRecordRequest struct {
 		Name      string       `json:"name"`

@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 
+	record_pb "github.com/everywan/demo-server-go/idl/proto/record"
 	"github.com/everywan/demo-server-go/internal/service"
 )
 
