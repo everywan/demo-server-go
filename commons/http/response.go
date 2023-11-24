@@ -1,4 +1,4 @@
-package controller
+package rest
 
 type Response struct {
 	Code    int         `json:"code"` // 0 表示成功
@@ -23,28 +23,27 @@ func FailResponse(code int, msg string) *Response {
 
 type (
 	PageBaseRequest struct {
-		// LastID // 可以按需添加 LastID
-		Limit   int    `json:"limit"`
-		Offset  int    `json:"offset"`
+		Limit  int `json:"limit"`
+		Offset int `json:"offset"`
+		// LastID // 按需添加所需类型的 LastID
 		Order   string `json:"order"`    // default desc.
 		OrderBy string `json:"order_by"` // default id
 	}
-	// 作为 Response.Data
 	PageBaseResponse struct {
 		Total   int         `json:"total"`
 		Records interface{} `json:"records"`
+		LastID  interface{} `json:"last_id"`
 	}
 )
 
-// --------------------- request -------------------
-type IDRequest struct {
-	ID int64 `json:"id"`
-}
-
-type IDRequestUint struct {
-	ID uint64 `json:"id"`
-}
-
-type IDRequestString struct {
-	ID string `json:"id"`
+func (req *PageBaseRequest) LoadDefault() {
+	if req.Limit == 0 {
+		req.Limit = 10
+	}
+	if req.Order == "" {
+		req.Order = "desc"
+	}
+	if req.OrderBy == "" {
+		req.OrderBy = "id"
+	}
 }

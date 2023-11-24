@@ -2,11 +2,13 @@ package bootstrap
 
 import (
 	"log"
+
+	"github.com/everywan/demo-server-go/commons/logger"
 )
 
 type Bootstrap struct {
-	// logger   *flog.Logger
-	teardown func()
+	logger    logger.Logger
+	teardowns []func()
 
 	configComponent
 	daoComponent
@@ -16,27 +18,25 @@ type Bootstrap struct {
 
 func NewBootstrap() *Bootstrap {
 	return &Bootstrap{
-		teardown: func() {},
+		teardowns: []func(){},
 	}
 }
 
 func (b *Bootstrap) Teardown() {
-	b.teardown()
+	for _, fn := range b.teardowns {
+		fn()
+	}
 }
 
-// func (b *Bootstrap) GetLogger() *flog.Logger {
-// 	if b.logger == nil {
-// 		b.logger = flog.NewLogger(b.cfg.Logging, os.Stdout)
-// 	}
-// 	return b.logger
-// }
-
-func (b *Bootstrap) addTeardown(newTeardown func()) {
-	teardown := b.teardown
-	b.teardown = func() {
-		teardown()
-		newTeardown()
+func (b *Bootstrap) GetLogger() logger.Logger {
+	if b.logger == nil {
+		b.logger = logger.New()
 	}
+	return b.logger
+}
+
+func (b *Bootstrap) AddTeardown(teardown func()) {
+	b.teardowns = append(b.teardowns, teardown)
 }
 
 func handleInitError(module string, err error) {

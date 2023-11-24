@@ -1,3 +1,3 @@
-// pkg 项目对外提供的资源.
+// package pkg contain project self-define public codes.
 
 package pkg

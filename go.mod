@@ -12,6 +12,7 @@ require (
 	google.golang.org/grpc v1.58.1
 	google.golang.org/protobuf v1.31.0
 	gorm.io/gorm v1.25.4
+	github.com/everywan/utils v0.1.0
 )
 
 require (
@@ -61,3 +62,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.5.1 // indirect
 )
+
+replace github.com/everywan/utils => ../utils

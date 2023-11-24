@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/everywan/demo-server-go/commons/tests"
 	"github.com/everywan/demo-server-go/internal/dao"
-	"github.com/everywan/demo-server-go/pkg/tests"
 	"github.com/stretchr/testify/assert"
 )
 

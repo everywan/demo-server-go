@@ -12,12 +12,12 @@ type daoComponent struct {
 }
 
 func (b *Bootstrap) GetRecordDB() *gorm.DB {
-	if b.recordDB == nil {
-		// todo db 封装
-		// db, err := database.NewDatabase(b.cfg.DB)
-		// handleInitError("connect database", err)
-		// b.addTeardown(func() { db.Close() })
-	}
+	// if b.recordDB == nil {
+	// 	// todo db 封装
+	// 	// db, err := database.NewDatabase(b.cfg.DB)
+	// 	// handleInitError("connect database", err)
+	// 	// b.addTeardown(func() { db.Close() })
+	// }
 	return b.recordDB
 }
 

@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/everywan/demo-server-go/commons/app"
 	"github.com/everywan/demo-server-go/internal/bootstrap"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
@@ -16,16 +18,13 @@ var serverCmd = &cobra.Command{
 		boot := bootstrap.NewBootstrap()
 		defer boot.Teardown()
 
-		// logger := boot.GetLogger()
+		logger := boot.GetLogger()
+		app := app.New(app.Name("demo_server"),
+			app.WithLogger(logger))
+
 		recordCtl := boot.GetRecordController()
 
 		e := gin.Default()
-		// e.Use(middleware.Logger())
-		// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		// 	AllowOrigins:     opts.Server.CorsAllowOrigin,
-		// 	AllowCredentials: true,
-		// }))
-
 		e.GET("/", func(c *gin.Context) {
 			c.String(http.StatusOK, "enjoy yourself!")
 		})
@@ -36,25 +35,8 @@ var serverCmd = &cobra.Command{
 			record.GET("/:id", recordCtl.Get)
 			record.POST("/", recordCtl.Create)
 		}
-
-		// quit := make(chan os.Signal, 1)
-		// go func() {
-		// 	// 当程序较多/HTTP设置较多时, 可以单独封装Server组件, 在组件内计算这些值
-		// 	address := fmt.Sprintf("%s:%d", opts.Server.Host, opts.Server.Port)
-		// 	err = e.Start(address)
-		// 	if err != nil {
-		// 		logger.Fatal("start echo error, error is ", err)
-		// 		quit <- os.Interrupt
-		// 	}
-		// }()
-		// signal.Notify(quit, os.Interrupt)
-		// <-quit
-
-		// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		// defer cancel()
-		// if err := e.Shutdown(ctx); err != nil {
-		// 	e.Logger.Fatal(err)
-		// }
+		app.AddBundle()
+		app.Run(context.Background())
 	},
 }
 
