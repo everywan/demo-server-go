@@ -1,18 +1,19 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/everywan/demo-server-go/commons/errors"
+	"github.com/everywan/demo-server-go/commons/logger"
+	"github.com/everywan/demo-server-go/commons/rest"
 	"github.com/everywan/demo-server-go/internal/service"
 	"github.com/everywan/demo-server-go/pkg/codemsg"
 	"github.com/gin-gonic/gin"
 )
 
-// todo add log
-
 // RecordController is GRPC controller
 type RecordController struct {
-	// logger *flog.Logger// todo
 	recordSvc service.RecordService
 }
 
@@ -22,47 +23,41 @@ func NewRecordController(recordSvc service.RecordService) *RecordController {
 	}
 }
 
-func (ctl *RecordController) Get(c *gin.Context) {
-	idReq := &IDRequestUint{}
+func (ctl *RecordController) Query(c *gin.Context) {
+	idReq := &rest.IDRequestUint{}
 	if err := c.ShouldBindUri(idReq); err != nil {
-		// todo log, stastd
-		c.JSON(http.StatusOK, FailResponse(codemsg., err.Error()))
+		// todo stastd
+		logger.Error(context.Background(),
+			"RecordController.Query ShouldBindUri error. err:%s", err)
+		c.JSON(http.StatusOK, rest.FailResponse(http.StatusBadRequest, err.Error()))
 		return
 	}
 	// 在svc层，error不变，表示发生异常。如果要记录异常状态，则放到resp里做。
-	record, err := ctl.recordSvc.Get(c, uint(idReq.ID))
+	req := &service.QueryRecordRequest{
+		ID: idReq.ID,
+	}
+	record, err := ctl.recordSvc.Query(c, req)
 	if err != nil {
-		// todo log, stastd
-		// demoCtl.logger.WithError(err).
-		// 	WithField("func", "doSomething").
-		// 	Error("xxx error")
-		// c.JSON()
-		c.JSON(http.StatusInternalServerError,
-			FailResponse(codemsg.InternalErrorCode, err.Error()))
-		return
+		errCode, ok := err.(*errors.ErrorCode)
+		if !ok {
+			// todo statsd
+			logger.Error(context.Background(), "RecordController.Query unknown error. err:%s", err)
+			c.JSON(http.StatusInternalServerError,
+				rest.FailResponse(http.StatusInternalServerError, err.Error()))
+		}
+		switch errCode.Code {
+		case codemsg.SelfDeinfeStatsu1:
+			// 假如这种场景下返回正常.
+			c.JSON(http.StatusOK, rest.SucResponse(nil))
+			return
+		default:
+			// todo statsd
+			logger.Error(context.Background(),
+				"RecordController.Query unknown error. err:%s", err)
+			c.JSON(http.StatusInternalServerError,
+				rest.FailResponse(http.StatusInternalServerError, err.Error()))
+			return
+		}
 	}
-	c.JSON(http.StatusOK, SucResponse(record))
-	return
-}
-
-func (ctl *RecordController) Create(c *gin.Context) {
-	idReq := &IDRequestUint{}
-	if err := c.ShouldBindUri(idReq); err != nil {
-		// todo log, stastd
-		c.JSON(http.StatusOK, FailResponse(codemsg.BadRequestErrorCode, err.Error()))
-		return
-	}
-	record, err := ctl.recordSvc.Get(c, uint(idReq.ID))
-	if err != nil {
-		// todo log, stastd
-		// demoCtl.logger.WithError(err).
-		// 	WithField("func", "doSomething").
-		// 	Error("xxx error")
-		// c.JSON()
-		c.JSON(http.StatusInternalServerError,
-			FailResponse(codemsg.InternalErrorCode, err.Error()))
-		return
-	}
-	c.JSON(http.StatusOK, SucResponse(record))
-	return
+	c.JSON(http.StatusOK, rest.SucResponse(record))
 }

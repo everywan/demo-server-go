@@ -3,6 +3,7 @@ package codemsg
 
 const (
 	StatusOK = iota
+	// http_code
 	SelfDeinfeStatsu1
 	SelfDeinfeStatsu2
 )

@@ -2,7 +2,6 @@ package impl
 
 import (
 	"context"
-	"time"
 
 	"github.com/everywan/demo-server-go/internal/dao"
 	"github.com/pkg/errors"
@@ -22,19 +21,19 @@ func NewRecordDao(db *gorm.DB) *RecordDao {
 var _ dao.RecordDao = new(RecordDao)
 
 // Create 创建数据库记录示例
-func (do *RecordDao) Create(ctx context.Context, req *dao.CreateRecordRequest) error {
+func (do *RecordDao) Create(ctx context.Context, req *dao.CreateRecordRequest,
+) (id uint, err error) {
 	record := &dao.Record{
 		Name:      req.Name,
 		Status:    req.Status,
-		CreatedAt: time.Now().Unix(),
 		CreatedBy: req.CreatedBy,
 		UpdatedBy: req.CreatedBy,
 	}
-	err := do.db.Model(record).Create(record).Error
+	err = do.db.Model(record).Create(record).Error
 	if err != nil {
-		return errors.Wrapf(err, "create record error. request:%+v", req)
+		return 0, errors.Wrapf(err, "create record error. request:%+v", req)
 	}
-	return nil
+	return record.ID, nil
 }
 
 // 只更新非零值字段
@@ -43,9 +42,10 @@ func (do *RecordDao) Update(ctx context.Context, req *dao.UpdateRecordRequest) e
 		return err
 	}
 	record := &dao.Record{
-		ID:        req.ID,
+		Model: gorm.Model{
+			ID: req.ID,
+		},
 		Name:      *req.Name,
-		UpdatedAt: time.Now().Unix(),
 		UpdatedBy: req.UpdatedBy,
 	}
 	err := do.db.Model(record).Updates(record).Error
@@ -63,9 +63,10 @@ func (do *RecordDao) UpdateStatus(ctx context.Context, req *dao.UpdateRecordStat
 		return err
 	}
 	record := &dao.Record{
-		ID:        req.ID,
+		Model: gorm.Model{
+			ID: req.ID,
+		},
 		Status:    req.Status,
-		UpdatedAt: time.Now().Unix(),
 		UpdatedBy: req.UpdatedBy,
 	}
 	err := do.db.Model(record).
@@ -148,7 +149,7 @@ func (do *RecordDao) Delete(ctx context.Context, id uint) error {
 	if id < 1 {
 		return errors.New("record id should gt 0")
 	}
-	err := do.db.Delete(&dao.Record{ID: uint64(id)}).Error
+	err := do.db.Delete(&dao.Record{Model: gorm.Model{ID: id}}).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil

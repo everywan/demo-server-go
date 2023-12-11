@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/everywan/demo-server-go/commons/env"
 	"github.com/everywan/demo-server-go/commons/logger"
+	"github.com/everywan/demo-server-go/commons/utils"
 )
 
 type options struct {
@@ -24,7 +24,7 @@ type options struct {
 
 func (opts *options) LoadDefault() {
 	if opts.appName == "" {
-		opts.appName = env.App()
+		opts.appName = utils.App()
 	}
 	if opts.logger == nil {
 		opts.logger = logger.GetLogger()

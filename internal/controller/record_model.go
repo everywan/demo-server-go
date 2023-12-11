@@ -20,8 +20,8 @@ func ToPbRecord(record *service.Record) *record_pb.Record {
 		Id:        uint64(record.ID),
 		Name:      record.Name,
 		Status:    record_pb.RecordStatus(record.Status),
-		CreatedAt: record.CreatedAt,
-		UpdatedAt: record.UpdatedAt,
+		CreatedAt: record.CreatedAt.Unix(),
+		UpdatedAt: record.UpdatedAt.Unix(),
 		CreatedBy: record.CreatedBy,
 		UpdatedBy: record.UpdatedBy,
 	}

@@ -5,7 +5,6 @@ package everywan.demo_server_go;
 option go_package = "./;record_pb";
 
 service RecordService {
-  rpc Create(CreateRequset) returns (EmptyRespose){}
   rpc Get(IDRequest) returns (Record){}
 }
 
@@ -30,13 +29,6 @@ message IDRequest {
 }
 
 message EmptyRespose {}
-
-message CreateRequset {
-  string name = 1;
-  RecordStatus status = 2;
-
-  uint64 created_by = 9;
-}
 
 // 用户不同模块的 proto.service 可以放在一起定义, 也可以分开, 视情况而定.
 // service UserComponentService{

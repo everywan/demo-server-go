@@ -9,73 +9,46 @@ import (
 
 //go:generate mockgen -destination mock/record.go -source=record.go
 type RecordDao interface {
-	Create(context.Context, *CreateRecordRequest) error
-	// 只更新非零值数据. status 更新操作频繁且功能单一, 一般单独开接口实现.
+	Create(context.Context, *CreateRecordRequest) (id uint, err error)
 	Update(context.Context, *UpdateRecordRequest) error
-	// 无论 status 是否有值, 都进行更新
 	UpdateStatus(context.Context, *UpdateRecordStatusRequest) error
 	Get(ctx context.Context, id uint) (*Record, error)
-	// 一般是一条记录有多个业务唯一ID, 用 query 查询, 返回符合的第一个.
 	Query(context.Context, *QueryRecordRequest) (*Record, error)
 	List(context.Context, *ListRecordRequest) (*ListRecordResponse, error)
 	Delete(ctx context.Context, id uint) error
 }
 
+type RecordStatus int8
+
 const (
-	RecordStatusInit = iota
+	RecordStatusInit RecordStatus = iota
 	RecordStatusCase1
 	RecordStatusCase2
 )
 
-type (
-	RecordStatus int8
-	Record       struct {
-		ID     uint64       `gorm:"column:id" json:"id"`
-		Name   string       `gorm:"column:name" json:"name"`
-		Status RecordStatus `grom:"column:status" json:"status"`
+type Record struct {
+	gorm.Model
+	Name   string       `gorm:"column:name" json:"name"`
+	Status RecordStatus `grom:"column:status" json:"status"`
 
-		CreatedAt int64          `gorm:"column:created_at" json:"created_at"`
-		UpdatedAt int64          `gorm:"column:updated_at" json:"updated_at"`
-		DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
-		CreatedBy uint64         `gorm:"column:created_by" json:"created_by"`
-		UpdatedBy uint64         `gorm:"column:updated_by" json:"updated_by"`
-	}
-	CreateRecordRequest struct {
-		Name      string       `json:"name"`
-		Status    RecordStatus `json:"status"`
-		CreatedBy uint64       `json:"created_by"`
-	}
-	UpdateRecordRequest struct {
-		ID        uint64  `json:"id"`
-		Name      *string `json:"name"` // 假设 Name 零值有意义, 则将字段设置为指针以启用更新
-		UpdatedBy uint64  `json:"updated_by"`
-	}
-	UpdateRecordStatusRequest struct {
-		ID        uint64       `json:"id"`
-		Status    RecordStatus `json:"status"`
-		UpdatedBy uint64       `json:"updated_by"`
-	}
-	QueryRecordRequest struct {
-		ID   uint64 `json:"id"`
-		Name string `json:"name"`
-	}
-	ListRecordRequest struct {
-		NameLike string        `json:"name_like"`
-		Status   *RecordStatus `json:"status"`
-		LastID   uint64        `json:"last_id"` // 解决深翻页
-		Limit    int           `json:"limit"`
-		Offset   int           `json:"offset"`
-		Order    string        `json:"order"`
-		OrderBy  string        `json:"order_by"`
-	}
-	ListRecordResponse struct {
-		Total   int       `json:"total"`
-		Records []*Record `json:"records"`
-	}
-)
+	CreatedBy uint64 `gorm:"column:created_by" json:"created_by"`
+	UpdatedBy uint64 `gorm:"column:updated_by" json:"updated_by"`
+}
 
 func (Record) TableName() string {
 	return "records"
+}
+
+type CreateRecordRequest struct {
+	Name      string       `json:"name"`
+	Status    RecordStatus `json:"status"`
+	CreatedBy uint64       `json:"created_by"`
+}
+
+type UpdateRecordRequest struct {
+	ID        uint    `json:"id"`
+	Name      *string `json:"name"`
+	UpdatedBy uint64  `json:"updated_by"`
 }
 
 func (req *UpdateRecordRequest) Validate() error {
@@ -88,11 +61,22 @@ func (req *UpdateRecordRequest) Validate() error {
 	return nil
 }
 
+type UpdateRecordStatusRequest struct {
+	ID        uint         `json:"id"`
+	Status    RecordStatus `json:"status"`
+	UpdatedBy uint64       `json:"updated_by"`
+}
+
 func (req *UpdateRecordStatusRequest) Validate() error {
 	if req.ID == 0 {
 		return errors.New("must have id")
 	}
 	return nil
+}
+
+type QueryRecordRequest struct {
+	ID   uint64 `json:"id"`
+	Name string `json:"name"`
 }
 
 func (req *QueryRecordRequest) Validate() error {
@@ -112,6 +96,22 @@ func (req *QueryRecordRequest) BuildQuery(db *gorm.DB) *gorm.DB {
 	db = db.Limit(1)
 	return db
 }
+
+type (
+	ListRecordRequest struct {
+		NameLike string        `json:"name_like"`
+		Status   *RecordStatus `json:"status"`
+		LastID   uint64        `json:"last_id"` // 解决深翻页
+		Limit    int           `json:"limit"`
+		Offset   int           `json:"offset"`
+		Order    string        `json:"order"`
+		OrderBy  string        `json:"order_by"`
+	}
+	ListRecordResponse struct {
+		Total   int       `json:"total"`
+		Records []*Record `json:"records"`
+	}
+)
 
 func (req *ListRecordRequest) LoadDefault() {
 	if req.Limit < 1 {

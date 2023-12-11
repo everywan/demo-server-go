@@ -14,7 +14,6 @@ import (
 
 type RecordTestSuite struct {
 	sqlmock   sqlmock.Sqlmock
-	mockDao   *RecordDao
 	recordDao *RecordDao
 
 	teardown []func()
@@ -24,7 +23,6 @@ func NewRecordTestSuite(t *testing.T) *RecordTestSuite {
 	mysqlMock := tests.NewMysqlMock(t)
 	return &RecordTestSuite{
 		sqlmock:   mysqlMock.Mock,
-		mockDao:   NewRecordDao(mysqlMock.Gdb),
 		recordDao: NewRecordDao(mysqlMock.Gdb),
 		teardown: []func(){
 			mysqlMock.Close,
@@ -55,7 +53,7 @@ func TestRecordCreate(t *testing.T) {
 		suite.sqlmock.ExpectCommit()
 	}
 
-	err := suite.recordDao.Create(ctx, req)
+	_, err := suite.recordDao.Create(ctx, req)
 	assert.NoError(t, err, "dao.Record.create happend error")
 }
 
@@ -235,67 +233,3 @@ func TestRecordGet(t *testing.T) {
 		}
 	}
 }
-
-// func TestRecordList(t *testing.T) {
-// 	dbmock := NewDBMock(t)
-// 	defer dbmock.Close()
-// 	RecordDB = dbmock.Gdb
-
-// 	ctx := context.Background()
-// 	RecordDao := &Record{}
-// 	testcases := []struct {
-// 		name                      string
-// 		offset, limit             int
-// 		order                     string
-// 		expectOffset, expectLimit int
-// 		expectOrder               string
-// 		expectTotal               int
-// 	}{
-// 		{"case1:list", 0, 2, "", 0, 2, "asc", 10},
-// 		{"case2:list", 2, 2, "desc", 2, 2, "desc", 10},
-// 		{"case3:not_match_after_load_default", -1, -1, "aaaa", 0, 10, "asc", 10},
-// 	}
-// 	for _, tcase := range testcases {
-// 		req := &ListRecordQuest{
-// 			Limit:  tcase.limit,
-// 			Offset: tcase.offset,
-// 			Sort:   tcase.order,
-// 		}
-// 		req.LoadDefault()
-// 		if req.Limit != tcase.expectLimit || req.Offset != tcase.expectOffset || req.Sort != tcase.expectOrder {
-// 			t.Errorf("case [%s]: dao.Record.list expect not match", tcase.name)
-// 			continue
-// 		}
-// 		{
-// 			sql := fmt.Sprintf("^SELECT \\* FROM `%s` WHERE `%s`.`deleted_at` IS NULL ORDER BY id %s LIMIT %d",
-// 				RecordDao.TableName(), RecordDao.TableName(), tcase.expectOrder, tcase.expectLimit)
-// 			if req.Offset != 0 {
-// 				sql = fmt.Sprintf("%s OFFSET %d", sql, tcase.expectOffset)
-// 			}
-// 			rows := make([]string, tcase.expectLimit)
-// 			for i := 0; i < tcase.expectLimit; i++ {
-// 				rows[i] = fmt.Sprintf("%d,%d", i, i)
-// 			}
-// 			dbmock.Mock.ExpectQuery(sql).
-// 				WithArgs().
-// 				WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).FromCSVString(strings.Join(rows, "\n")))
-// 			dbmock.Mock.ExpectQuery(fmt.Sprintf("^SELECT count\\(\\*\\) FROM `%s` WHERE `%s`.`deleted_at` IS NULL",
-// 				RecordDao.TableName(), RecordDao.TableName())).
-// 				WithArgs().
-// 				WillReturnRows(sqlmock.NewRows([]string{"count"}).FromCSVString(strconv.Itoa(tcase.expectTotal)))
-// 		}
-// 		records, err := RecordDao.List(ctx, req)
-// 		if err != nil {
-// 			t.Errorf("case [%s]: dao.Record.get happend error: [%s]", tcase.name, err)
-// 			continue
-// 		}
-// 		if records.Total != tcase.expectTotal {
-// 			t.Errorf("case [%s]: dao.Record.list happend error, result.total(%d)!=expect.total(%d)", tcase.name, records.Total, tcase.expectTotal)
-// 			continue
-// 		}
-// 		if len(records.Data) != tcase.expectLimit {
-// 			t.Errorf("case [%s]: dao.Record.list happend error, result.len(%d)!=expect.limit(%d)", tcase.name, len(records.Data), tcase.expectLimit)
-// 			continue
-// 		}
-// 	}
-// }
