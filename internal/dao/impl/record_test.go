@@ -12,16 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type RecordTestSuite struct {
+type RecordTestHelper struct {
 	sqlmock   sqlmock.Sqlmock
 	recordDao *RecordDao
 
 	teardown []func()
 }
 
-func NewRecordTestSuite(t *testing.T) *RecordTestSuite {
+func NewRecordTestHelper(t *testing.T) *RecordTestHelper {
 	mysqlMock := tests.NewMysqlMock(t)
-	return &RecordTestSuite{
+	return &RecordTestHelper{
 		sqlmock:   mysqlMock.Mock,
 		recordDao: NewRecordDao(mysqlMock.Gdb),
 		teardown: []func(){
@@ -31,7 +31,7 @@ func NewRecordTestSuite(t *testing.T) *RecordTestSuite {
 }
 
 func TestRecordCreate(t *testing.T) {
-	suite := NewRecordTestSuite(t)
+	suite := NewRecordTestHelper(t)
 	ctx := context.Background()
 	req := &dao.CreateRecordRequest{
 		Name:      "test_name_1",
@@ -58,7 +58,7 @@ func TestRecordCreate(t *testing.T) {
 }
 
 func TestRecordUpdate(t *testing.T) {
-	suite := NewRecordTestSuite(t)
+	suite := NewRecordTestHelper(t)
 
 	ctx := context.Background()
 	record := &dao.Record{}
@@ -118,13 +118,13 @@ func TestRecordUpdate(t *testing.T) {
 }
 
 func TestRecordUpdateStatus(t *testing.T) {
-	suite := NewRecordTestSuite(t)
+	suite := NewRecordTestHelper(t)
 
 	ctx := context.Background()
 	record := &dao.Record{}
 	testcases := []struct {
 		name       string
-		id         uint64
+		id         uint
 		status     dao.RecordStatus
 		updateBy   uint64
 		expectArgs []driver.Value
@@ -182,7 +182,7 @@ func TestRecordUpdateStatus(t *testing.T) {
 }
 
 func TestRecordDelete(t *testing.T) {
-	suite := NewRecordTestSuite(t)
+	suite := NewRecordTestHelper(t)
 
 	ctx := context.Background()
 	record := &dao.Record{}
@@ -204,7 +204,7 @@ func TestRecordDelete(t *testing.T) {
 }
 
 func TestRecordGet(t *testing.T) {
-	suite := NewRecordTestSuite(t)
+	suite := NewRecordTestHelper(t)
 
 	ctx := context.Background()
 	record := &dao.Record{}
