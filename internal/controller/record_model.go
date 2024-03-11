@@ -25,5 +25,4 @@ func ToPbRecord(record *service.Record) *record_pb.Record {
 		CreatedBy: record.CreatedBy,
 		UpdatedBy: record.UpdatedBy,
 	}
-
 }

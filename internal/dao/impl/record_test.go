@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// todo 改为 testsuite
 type RecordTestHelper struct {
 	sqlmock   sqlmock.Sqlmock
 	recordDao *RecordDao

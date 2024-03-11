@@ -36,22 +36,16 @@ func (cl *RecordGrpcController) Get(ctx context.Context, req *record_pb.IDReques
 	}
 	record, err := cl.recordSvc.Query(ctx, svcReq)
 	if err != nil {
-		errCode, ok := err.(*errors.ErrorCode)
-		if !ok {
-			// todo statsd
-			logger.Error(context.Background(), "RecordController.Query unknown error. err:%s", err)
-			return &record_pb.Record{}, status.Errorf(codes.Internal, err.Error())
+		if errCode, ok := err.(*errors.ErrorCode); ok {
+			switch errCode.Code {
+			case codemsg.SelfDeinfeStatsu1:
+				// 假如这种场景下返回正常.
+				return &record_pb.Record{}, nil
+			}
 		}
-		switch errCode.Code {
-		case codemsg.SelfDeinfeStatsu1:
-			// 假如这种场景下返回正常.
-			return &record_pb.Record{}, nil
-		default:
-			// todo statsd
-			logger.Error(context.Background(),
-				"RecordController.Query unknown error. err:%s", err)
-			return &record_pb.Record{}, status.Errorf(codes.Internal, err.Error())
-		}
+		// todo statsd
+		logger.Error(context.Background(), "RecordController.Query unknown error. err:%s", err)
+		return &record_pb.Record{}, status.Errorf(codes.Internal, err.Error())
 	}
 	return ToPbRecord(record), nil
 }

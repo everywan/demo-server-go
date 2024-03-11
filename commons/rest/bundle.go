@@ -26,9 +26,12 @@ func (bundle *HTTPBundle) LoadDefault() {
 	if bundle.name == "" {
 		bundle.name = utils.App()
 	}
+	if bundle.port == 0 {
+		bundle.port = 8080
+	}
 }
 
-func New(opts ...Option) {
+func New(opts ...Option) *HTTPBundle {
 	api := &HTTPBundle{}
 
 	for _, opt := range opts {
@@ -43,6 +46,8 @@ func (bundle *HTTPBundle) GetName() string {
 }
 
 func (bundle *HTTPBundle) Run(ctx context.Context) {
+	bundle.LoadDefault()
+
 	bundle.httpServer = http.Server{
 		Addr:         ":" + strconv.Itoa(bundle.port),
 		Handler:      http.TimeoutHandler(bundle.router, bundle.timeout, ""),

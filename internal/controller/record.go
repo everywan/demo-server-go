@@ -29,7 +29,7 @@ func (ctl *RecordController) Query(c *gin.Context) {
 		// todo stastd
 		logger.Error(context.Background(),
 			"RecordController.Query ShouldBindUri error. err:%s", err)
-		c.JSON(http.StatusOK, rest.FailResponse(http.StatusBadRequest, err.Error()))
+		c.JSON(http.StatusBadRequest, rest.FailResponse(http.StatusBadRequest, err.Error()))
 		return
 	}
 	// 在svc层，error不变，表示发生异常。如果要记录异常状态，则放到resp里做。
@@ -38,26 +38,18 @@ func (ctl *RecordController) Query(c *gin.Context) {
 	}
 	record, err := ctl.recordSvc.Query(c, req)
 	if err != nil {
-		errCode, ok := err.(*errors.ErrorCode)
-		if !ok {
-			// todo statsd
-			logger.Error(context.Background(), "RecordController.Query unknown error. err:%s", err)
-			c.JSON(http.StatusInternalServerError,
-				rest.FailResponse(http.StatusInternalServerError, err.Error()))
+		if errCode, ok := err.(*errors.ErrorCode); ok {
+			switch errCode.Code {
+			case codemsg.SelfDeinfeStatsu1:
+				// 假如这种场景下返回正常.
+				c.JSON(http.StatusOK, rest.SucResponse(nil))
+				return
+			}
 		}
-		switch errCode.Code {
-		case codemsg.SelfDeinfeStatsu1:
-			// 假如这种场景下返回正常.
-			c.JSON(http.StatusOK, rest.SucResponse(nil))
-			return
-		default:
-			// todo statsd
-			logger.Error(context.Background(),
-				"RecordController.Query unknown error. err:%s", err)
-			c.JSON(http.StatusInternalServerError,
-				rest.FailResponse(http.StatusInternalServerError, err.Error()))
-			return
-		}
+		// todo statsd
+		logger.Error(context.Background(), "RecordController.Query unknown error. err:%s", err)
+		c.JSON(http.StatusInternalServerError,
+			rest.FailResponse(http.StatusInternalServerError, err.Error()))
 	}
 	c.JSON(http.StatusOK, rest.SucResponse(record))
 }

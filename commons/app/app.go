@@ -87,7 +87,7 @@ func (app *BaseApplication) Run(ctx context.Context) {
 	case <-bundleFinishCtx.Done():
 		app.logger.Info(ctx, "All bundle finished.")
 	case <-quit:
-		app.logger.Info(ctx, "Shutdown signal receied.")
+		app.logger.Info(ctx, "Shutdown signal received.")
 	}
 
 	app.runBeforeStop(ctx)

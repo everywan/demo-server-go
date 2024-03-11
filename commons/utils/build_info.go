@@ -16,6 +16,7 @@ var (
 	GoVersion    string // Golang信息
 )
 
+// Print your build info
 func PrintBuildInfo() {
 	v, _ := base64.StdEncoding.DecodeString(BuildVersion)
 	BuildVersion = strings.TrimSpace(string(v))

@@ -7,9 +7,7 @@ import (
 	"github.com/everywan/demo-server-go/internal/service"
 )
 
-// todo add cache, and curd form cache.
 type RecordService struct {
-	// cache redis.cache
 	do dao.RecordDao
 }
 
