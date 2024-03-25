@@ -17,6 +17,19 @@ var (
 )
 
 // Print your build info
+/*
+Need add build flags
+	go build -ldflags "
+		-X 'github.com/everywan/commons/utils.AppName=${APP_NAME}'             \
+		-X 'github.com/everywan/commons/utils.AppVersion=${APP_VERSION}'       \
+		-X 'github.com/everywan/commons/utils.BuildVersion=${BUILD_VERSION}'   \
+		-X 'github.com/everywan/commons/utils.BuildTime=${BUILD_TIME}'         \
+		-X 'github.com/everywan/commons/utils.GitRevision=${GIT_REVISION}'     \
+		-X 'github.com/everywan/commons/utils.GitBranch=${GIT_BRANCH}'         \
+		-X 'github.com/everywan/commons/utils.GoVersion=${GO_VERSION}'         \
+		-s -w
+	" -mod vendor -v -o  $(NAME) ${MAIN}
+*/
 func PrintBuildInfo() {
 	v, _ := base64.StdEncoding.DecodeString(BuildVersion)
 	BuildVersion = strings.TrimSpace(string(v))
